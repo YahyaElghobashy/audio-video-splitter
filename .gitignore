@@ -1,0 +1,10 @@
+cat <<EOF > .gitignore
+__pycache__/
+*.pyc
+*.zip
+uploads/
+chunks/
+venv/
+.env
+.DS_Store
+EOF
