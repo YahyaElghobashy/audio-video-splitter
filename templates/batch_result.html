@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Batch Processing Complete</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link 
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" 
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <style>
+    body {
+      padding: 2rem 0;
+      background-color: #f8f9fa;
+      color: #212529;
+    }
+    .container {
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      padding: 2rem;
+    }
+    .app-header {
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #eee;
+    }
+    .chunk-list {
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      padding: 1rem;
+      background-color: #f8f9fa;
+      margin-bottom: 1rem;
+    }
+    .chunk-item {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem;
+      margin-bottom: 0.5rem;
+      border-radius: 6px;
+      background-color: white;
+      border-left: 3px solid #0d6efd;
+      transition: all 0.2s;
+    }
+    .chunk-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+    }
+    .chunk-item:last-child {
+      margin-bottom: 0;
+    }
+    .chunk-name {
+      flex-grow: 1;
+      margin-left: 0.5rem;
+    }
+    .file-card {
+      margin-bottom: 2rem;
+      border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 10px;
+      padding: 1.5rem;
+      background-color: white;
+      transition: all 0.2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .file-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    }
+    .file-card h4 {
+      font-size: 1.25rem;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+    .action-btn {
+      transition: all 0.2s;
+    }
+    .action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    }
+    .result-count {
+      display: inline-block;
+      padding: 0.75rem 1.25rem;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      border-left: 3px solid #198754;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" style="max-width:850px">
+    <div class="app-header">
+      <h2><i class="bi bi-check-circle-fill text-success"></i> Batch Processing Complete</h2>
+      <p class="text-muted">Multiple files have been successfully split into chunks</p>
+    </div>
+    
+    <div class="result-count">
+      <i class="bi bi-collection"></i> 
+      Successfully processed <strong>{{ batch_results|length }}</strong> files
+    </div>
+    
+    <div class="d-flex gap-2 mb-4">
+      <a href="{{ url_for('index') }}" class="btn btn-primary action-btn">
+        <i class="bi bi-arrow-left"></i> Process More Files
+      </a>
+      <a href="{{ url_for('history') }}" class="btn btn-outline-secondary action-btn">
+        <i class="bi bi-clock-history"></i> View History
+      </a>
+    </div>
+    
+    <h4 class="mb-4"><i class="bi bi-list-ul"></i> Processed Files:</h4>
+    
+    {% for result in batch_results %}
+      <div class="file-card">
+        <h4>
+          <i class="bi bi-folder"></i> 
+          {{ result.folder }}
+        </h4>
+        
+        <div class="d-flex gap-2 mb-3">
+          <a href="{{ url_for('download', folder=result.folder, filename=result.zip_name) }}" 
+             class="btn btn-success btn-sm action-btn">
+            <i class="bi bi-file-earmark-zip"></i> Download All as ZIP
+          </a>
+          <a href="{{ url_for('done', folder=result.folder) }}" class="btn btn-outline-primary btn-sm action-btn">
+            <i class="bi bi-folder2-open"></i> View Details
+          </a>
+          <a href="file://{{ result.abs_path }}" target="_blank" class="btn btn-outline-secondary btn-sm action-btn">
+            <i class="bi bi-folder2-open"></i> Open in Finder
+          </a>
+        </div>
+        
+        <p><i class="bi bi-collection"></i> Created <strong>{{ result.parts|length }}</strong> chunks</p>
+        
+        <div class="chunk-list">
+          {% for f in result.parts %}
+            <div class="chunk-item">
+              <i class="bi bi-file-earmark-music"></i>
+              <div class="chunk-name">{{ f }}</div>
+              <a href="{{ url_for('download', folder=result.folder, filename=f) }}" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-download"></i>
+              </a>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</body>
+</html> 

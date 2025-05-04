@@ -21,25 +21,38 @@ def format_timestamp(seconds):
     s = int(seconds % 60)
     return f"{h:02d}:{m:02d}:{s:02d}.{ms:03d}"
 
-def split_manual(input_file, output_dir, total_duration, segment_sec, count, base_name):
+def split_manual(input_file, output_dir, total_duration, segment_sec, count, base_name, use_fade=False):
     os.makedirs(output_dir, exist_ok=True)
     for i in range(count):
         start = segment_sec * i
         dur = segment_sec if i < count - 1 else (total_duration - start)
         ts_start = format_timestamp(start)
-        ts_dur   = format_timestamp(dur)
+        ts_dur = format_timestamp(dur)
         out_name = f"{base_name}-part{i+1:03d}.m4a"
         out_path = os.path.join(output_dir, out_name)
         print(f"→ Writing {out_name} (start={ts_start}, dur={ts_dur})")
-        subprocess.run([
+        
+        # Build the ffmpeg command
+        cmd = [
             "ffmpeg", "-hide_banner", "-loglevel", "error",
             "-i", input_file,
             "-ss", ts_start,
-            "-t", ts_dur,
-            "-map", "0:a",
-            "-c", "copy",
-            out_path
-        ], check=True)
+            "-t", ts_dur
+        ]
+        
+        # Add fade in/out if requested
+        if use_fade:
+            fade_duration = min(2, dur/4)  # 2 seconds or 25% of segment (whichever is shorter)
+            fade_filter = f"afade=t=in:st=0:d={fade_duration},afade=t=out:st={dur-fade_duration}:d={fade_duration}"
+            cmd.extend(["-af", fade_filter])
+            # Can't use copy codec with filters
+            cmd.extend(["-map", "0:a", "-c:a", "aac", "-b:a", "192k"])
+        else:
+            # No fade, just copy audio
+            cmd.extend(["-map", "0:a", "-c", "copy"])
+            
+        cmd.append(out_path)
+        subprocess.run(cmd, check=True)
     print("\n✅ Done! Chunks saved to:", output_dir)
 
 def main():
@@ -60,6 +73,8 @@ def main():
                    help="path to input file (mp4/mp3/…)")
     p.add_argument("-o", "--output",
                    help="optional override: output directory (default: sibling folder named <base>-split-<N>parts>)")
+    p.add_argument("-f", "--fade", action="store_true",
+                   help="apply fade in/out effect (2 seconds) to chunk boundaries")
     args = p.parse_args()
 
     total = get_total_duration(args.input)
@@ -81,7 +96,8 @@ def main():
         output_dir = os.path.join(parent, folder_name)
 
     print(f"Total duration: {total:.1f}s → {count} chunks of ≈{segment:.1f}s each")
-    split_manual(args.input, output_dir, total, segment, count, base)
+    print(f"Fade effect: {'Enabled' if args.fade else 'Disabled'}")
+    split_manual(args.input, output_dir, total, segment, count, base, args.fade)
 
 if __name__ == "__main__":
-    main()
+    main() 

@@ -18,5 +18,8 @@ ENV FLASK_APP=app.py
 ENV FLASK_RUN_PORT=10000
 ENV FLASK_RUN_HOST=0.0.0.0
 
+# Create necessary directories
+RUN mkdir -p uploads/youtube
+
 # Start Flask server
-CMD ["flask", "run", "--host=0.0.0.0", "--port=10000"]
+CMD ["flask", "run", "--host=0.0.0.0", "--port=10000"] 

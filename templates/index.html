@@ -1,37 +1,1025 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Audio/Video Splitter</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <link 
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" 
-    rel="stylesheet">
-  <style>body{padding:2rem}</style>
+  <meta charset="UTF-8">
+  <title>Audio and Video Splitter</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Audio/Video Splitter">
+  <meta name="theme-color" content="#f8f9fa">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='icon.png') }}">
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <style>
+    :root {
+      --primary-color: #0d6efd;
+      --success-color: #198754;
+      --light-bg: #f8f9fa;
+      --border-color: #dee2e6;
+      --accent-border: 3px solid var(--primary-color);
+      --touch-size: 48px;
+    }
+    
+    html, body {
+      height: 100%;
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    body {
+      padding: 0;
+      background-color: var(--light-bg);
+      color: #212529;
+      touch-action: manipulation;
+    }
+    
+    .page-container {
+      padding: 1rem 0;
+    }
+    
+    .ios-momentum-scroll {
+      -webkit-overflow-scrolling: touch;
+      overflow-y: scroll;
+    }
+    
+    .container {
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    
+    @media (max-width: 768px) {
+      .container {
+        padding: 1.25rem;
+        border-radius: 8px;
+      }
+    }
+    
+    .app-header {
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .drop-zone {
+      border: 2px dashed #ccc;
+      border-radius: 10px;
+      padding: 2rem 1rem;
+      text-align: center;
+      transition: all 0.3s;
+      background-color: var(--light-bg);
+      min-height: 120px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    @media (max-width: 576px) {
+      .drop-zone {
+        padding: 1.5rem 1rem;
+      }
+    }
+    
+    .drop-zone.active {
+      border-color: var(--primary-color);
+      background-color: rgba(13, 110, 253, 0.05);
+    }
+    
+    .file-list {
+      margin-top: 1rem;
+      max-height: 200px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    .file-item {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem;
+      margin-bottom: 0.5rem;
+      border-radius: 6px;
+      background-color: var(--light-bg);
+      border-left: var(--accent-border);
+    }
+    
+    .file-name {
+      flex-grow: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-left: 0.5rem;
+    }
+    
+    /* Touch-friendly tabs */
+    .tab-buttons {
+      display: flex;
+      margin-bottom: 1rem;
+      border-radius: 8px;
+      overflow: hidden;
+      background-color: var(--light-bg);
+      border: 1px solid var(--border-color);
+    }
+    
+    .tab-btn {
+      flex: 1;
+      border: none;
+      background: none;
+      padding: 1rem 0.75rem;
+      font-weight: 500;
+      color: #495057;
+      transition: all 0.2s;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+      min-height: var(--touch-size);
+    }
+    
+    .tab-btn i {
+      font-size: 1.25rem;
+    }
+    
+    .tab-btn.active {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    
+    .tab-content {
+      padding: 1.25rem 1rem;
+      margin-bottom: 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background-color: var(--light-bg);
+    }
+    
+    /* Larger touch targets */
+    .form-control, .btn {
+      min-height: var(--touch-size);
+      font-size: 1rem;
+    }
+    
+    .form-check-input {
+      width: 1.25rem;
+      height: 1.25rem;
+      margin-top: 0.15rem;
+    }
+    
+    .form-check-label {
+      padding-left: 0.25rem;
+      padding-top: 0.25rem;
+    }
+    
+    .split-btn {
+      margin-top: 1rem;
+      padding: 0.875rem;
+      font-weight: 500;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      transition: all 0.2s;
+      font-size: 1.1rem;
+    }
+    
+    .split-btn:hover, .split-btn:focus {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .history-section {
+      margin-top: 2.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border-color);
+    }
+    
+    .section-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    
+    .history-item {
+      padding: 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      background-color: #fff;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    @media (min-width: 768px) {
+      .history-item {
+        flex-direction: row;
+        align-items: center;
+      }
+    }
+    
+    .history-item:hover, .history-item:active {
+      border-color: var(--primary-color);
+      background-color: rgba(13, 110, 253, 0.02);
+      transform: translateY(-2px);
+      box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+    }
+    
+    .history-info {
+      flex-grow: 1;
+      margin-bottom: 0.75rem;
+    }
+    
+    @media (min-width: 768px) {
+      .history-info {
+        margin-bottom: 0;
+      }
+    }
+    
+    .history-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+    
+    .history-timestamp {
+      font-size: 0.8rem;
+      color: #6c757d;
+      margin-top: 0.25rem;
+    }
+    
+    .checkbox-fade {
+      margin-top: 1rem;
+      background-color: white;
+      padding: 1rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
+    
+    /* For iOS native upload */
+    .native-upload {
+      display: block;
+      width: 100%;
+      padding: 0.75rem;
+      background-color: var(--light-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      margin-top: 1rem;
+      text-align: center;
+    }
+    
+    /* For iOS-specific styles */
+    @supports (-webkit-touch-callout: none) {
+      /* CSS specific to iOS devices */
+      input, button, a {
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+      }
+      
+      .form-control, select, textarea {
+        font-size: 16px; /* Prevent iOS zoom on focus */
+      }
+      
+      /* Fix iOS Safari momentum scrolling */
+      .file-list, .ios-momentum-scroll {
+        -webkit-overflow-scrolling: touch;
+        overflow-y: auto;
+      }
+      
+      /* Enhance iOS button styling */
+      .btn {
+        touch-action: manipulation;
+        -webkit-appearance: none;
+      }
+      
+      /* Prevent double-tap zoom */
+      * {
+        touch-action: manipulation;
+      }
+      
+      /* Improve iOS form controls */
+      input[type="number"] {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+    }
+    
+    /* Collapsible section for mobile */
+    .collapsible-section {
+      margin-bottom: 1rem;
+    }
+    
+    .collapsible-header {
+      background-color: var(--light-bg);
+      padding: 1rem;
+      border-radius: 8px;
+      font-weight: 500;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+    
+    .collapsible-content {
+      padding: 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 0 0 8px 8px;
+      margin-top: -5px;
+      background-color: white;
+    }
+    
+    /* Hide desktop only items on mobile */
+    @media (max-width: 768px) {
+      .desktop-only {
+        display: none;
+      }
+    }
+    
+    /* Hide mobile only items on desktop */
+    @media (min-width: 769px) {
+      .mobile-only {
+        display: none;
+      }
+    }
+    
+    /* Action buttons */
+    .action-btn {
+      min-height: var(--touch-size);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.5rem 1rem;
+      font-weight: 500;
+    }
+    
+    /* File upload button for iOS */
+    .ios-upload-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      width: 100%;
+      padding: 1rem;
+      background-color: var(--light-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-weight: 500;
+    }
+    
+    /* Mobile specific enhancements */
+    @media (max-width: 768px) {
+      .mobile-fullwidth {
+        width: 100%;
+        margin-top: 0.5rem;
+      }
+      
+      .btn-lg {
+        padding: 0.75rem 1rem;
+        font-size: 1.1rem;
+      }
+      
+      .ios-input {
+        font-size: 16px !important; /* Prevents zoom on focus in iOS */
+      }
+      
+      .file-upload {
+        margin-bottom: 1.5rem;
+      }
+      
+      /* Improved touch targets */
+      .form-check-label, 
+      .form-check-input {
+        min-height: 24px;
+        margin-bottom: 0.5rem;
+      }
+    }
+    
+    /* iOS specific fixes */
+    @supports (-webkit-touch-callout: none) {
+      /* iOS Safari specific rules */
+      input[type="number"] {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      
+      select {
+        background-color: transparent;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right .75rem center;
+        background-size: 16px 12px;
+      }
+    }
+  </style>
 </head>
 <body>
-  <div class="container" style="max-width:500px">
-    <h2 class="mb-4">Split Audio/Video</h2>
+  <div class="page-container">
+    <div class="container" style="max-width:650px">
+      <div class="app-header">
+        <h2><i class="bi bi-scissors"></i> Split Audio/Video</h2>
+        <div class="d-flex justify-content-between align-items-center">
+          <p class="text-muted mb-0">Upload files and split them into equal chunks or by specific duration</p>
+          <a href="{{ url_for('youtube') }}" class="btn btn-sm btn-outline-danger ms-2">
+            <i class="bi bi-youtube"></i> YouTube Processor
+          </a>
+        </div>
+      </div>
+      
     {% with msgs = get_flashed_messages() %}
       {% if msgs %}
         <div class="alert alert-warning">{{ msgs[0] }}</div>
       {% endif %}
     {% endwith %}
-    <form method="POST" enctype="multipart/form-data">
-      <div class="mb-3">
-        <label class="form-label">File</label>
-        <input type="file" name="file" class="form-control" required>
+      
+      <form method="POST" enctype="multipart/form-data" id="uploadForm">
+        <!-- Mobile collapsible section -->
+        <div class="collapsible-section mobile-only">
+          <div class="collapsible-header" data-bs-toggle="collapse" data-bs-target="#fileUploadCollapse">
+            <span><i class="bi bi-file-earmark-music"></i> Choose Files</span>
+            <i class="bi bi-chevron-down"></i>
+          </div>
+          <div class="collapse show" id="fileUploadCollapse">
+            <div class="collapsible-content">
+              <div class="file-upload">
+                <label for="file-input" class="form-label">Choose File</label>
+                <div class="input-group mb-3">
+                  <input type="file" class="form-control" id="file-input" name="file" accept="audio/*,video/*" required>
+                  <button class="btn btn-outline-secondary mobile-fullwidth" type="button" data-bs-toggle="collapse" data-bs-target="#uploadOptions" aria-expanded="false" aria-controls="uploadOptions">
+                    <i class="bi bi-gear-fill"></i> <span class="d-none d-md-inline">Options</span>
+                  </button>
+                </div>
+                <small class="form-text text-muted mb-3 d-block">Supported formats: MP3, MP4, WAV, AVI, MOV, etc.</small>
+              </div>
+              <div class="file-list ios-momentum-scroll" id="fileListMobile"></div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Desktop file upload -->
+        <div class="mb-4 desktop-only">
+          <label class="form-label fw-bold"><i class="bi bi-file-earmark-music"></i> File(s)</label>
+          <div class="drop-zone" id="dropZone">
+            <p><i class="bi bi-cloud-arrow-up fs-1 text-primary"></i></p>
+            <p class="mb-0">Drag and drop files here or click to browse</p>
+            <p class="text-muted small">Supported formats: MP3, MP4, WAV, M4A, MOV, AVI</p>
+            <input type="file" name="file" id="fileInput" class="d-none" multiple>
+          </div>
+          <div class="file-list" id="fileList"></div>
+        </div>
+        
+        <!-- Mobile collapsible settings -->
+        <div class="collapsible-section mobile-only">
+          <div class="collapsible-header" data-bs-toggle="collapse" data-bs-target="#settingsCollapse">
+            <span><i class="bi bi-sliders"></i> Split Settings</span>
+            <i class="bi bi-chevron-down"></i>
+          </div>
+          <div class="collapse show" id="settingsCollapse">
+            <div class="collapsible-content">
+              <div class="tab-buttons" id="splitModeSelectorMobile">
+                <button type="button" class="tab-btn active" data-mode="duration">
+                  <i class="bi bi-clock"></i> By Duration
+                </button>
+                <button type="button" class="tab-btn" data-mode="chunks">
+                  <i class="bi bi-grid-3x3"></i> By Chunks
+                </button>
+              </div>
+              
+              <div class="tab-content" id="durationTabMobile">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                  <input type="number" name="duration" id="durationMobile" min="0.1" step="0.1" value="20" class="form-control ios-input" inputmode="decimal">
+                  <label class="ms-2 text-nowrap"><i class="bi bi-clock"></i> Minutes</label>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                  <input type="number" name="duration_seconds" id="durationSecondsMobile" min="1" step="1" value="60" class="form-control ios-input" inputmode="decimal">
+                  <label class="ms-2 text-nowrap"><i class="bi bi-stopwatch"></i> Seconds</label>
+                </div>
+                <small class="form-text text-muted mt-2">Use seconds for shorter clips</small>
+              </div>
+              
+              <div class="tab-content d-none" id="chunksTabMobile">
+                <div class="d-flex align-items-center gap-2">
+                  <input type="number" name="num_chunks" id="numChunksMobile" min="1" step="1" class="form-control" inputmode="numeric">
+                  <label class="ms-2 text-nowrap"><i class="bi bi-grid-3x3"></i> Chunks</label>
+                </div>
+              </div>
+              
+              <div class="checkbox-fade">
+                <div class="form-check">
+                  <input type="checkbox" class="form-check-input" id="fadeMobile" name="fade">
+                  <label class="form-check-label" for="fadeMobile">
+                    <i class="bi bi-music-note"></i> Apply fade-in/fade-out (2 sec)
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Desktop settings -->
+        <div class="mb-4 desktop-only">
+          <label class="form-label fw-bold"><i class="bi bi-sliders"></i> Split Options</label>
+          
+          <div class="tab-buttons" id="splitModeSelector">
+            <button type="button" class="tab-btn active" data-mode="duration">
+              <i class="bi bi-clock"></i> By Duration
+            </button>
+            <button type="button" class="tab-btn" data-mode="chunks">
+              <i class="bi bi-grid-3x3"></i> By Number of Chunks
+            </button>
+          </div>
+          
+          <div class="tab-content" id="durationTab">
+            <div class="row mb-3">
+              <div class="col">
+                <div class="d-flex align-items-center gap-2">
+                  <input type="number" name="duration" id="duration" min="0.1" step="0.1" value="20" class="form-control">
+                  <label class="ms-2 text-nowrap"><i class="bi bi-clock"></i> Minutes</label>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <div class="d-flex align-items-center gap-2">
+                  <input type="number" name="duration_seconds" id="durationSeconds" min="1" step="1" value="60" class="form-control">
+                  <label class="ms-2 text-nowrap"><i class="bi bi-stopwatch"></i> Seconds</label>
+                </div>
+                <small class="form-text text-muted mt-2">Use seconds for shorter clips</small>
+              </div>
+            </div>
+          </div>
+          
+          <div class="tab-content d-none" id="chunksTab">
+            <div class="d-flex align-items-center gap-2">
+              <input type="number" name="num_chunks" id="numChunks" min="1" step="1" class="form-control" inputmode="numeric">
+              <label class="ms-2 text-nowrap"><i class="bi bi-grid-3x3"></i> Number of chunks</label>
+            </div>
+          </div>
+          
+          <div class="checkbox-fade">
+            <div class="form-check">
+              <input type="checkbox" class="form-check-input" id="fade" name="fade">
+              <label class="form-check-label" for="fade">
+                <i class="bi bi-music-note"></i> Apply fade-in/fade-out (2 sec)
+              </label>
+            </div>
       </div>
-      <div class="mb-3 d-flex align-items-center gap-2">
-        <input type="number" name="duration" min="0.1" step="0.1" value="20" class="form-control" style="max-width:100px">
-        <label>min per chunk</label>
       </div>
-      <div class="mb-3 d-flex align-items-center gap-2">
-        <input type="number" name="num_chunks" min="1" step="1" class="form-control" style="max-width:100px">
-        <label>OR # of chunks</label>
+        
+        <div class="d-grid gap-2">
+          <button type="submit" class="btn btn-primary btn-lg" id="splitBtnMobile">
+            <i class="bi bi-scissors me-2"></i>Split File
+          </button>
       </div>
-      <button class="btn btn-primary w-100">Split &amp; Upload</button>
     </form>
+  
+      {% if history and history|length > 0 %}
+        <div class="history-section">
+          <div class="section-heading">
+            <h5><i class="bi bi-clock-history"></i> Recent Splits</h5>
+            <a href="{{ url_for('view_history') }}" class="btn btn-sm btn-outline-secondary action-btn">
+              View All <i class="bi bi-arrow-right"></i>
+            </a>
+          </div>
+          
+          <!-- Mobile collapsible history -->
+          <div class="collapsible-section mobile-only">
+            <div class="collapsible-header" data-bs-toggle="collapse" data-bs-target="#historyCollapse">
+              <span>Recent Items ({{ history|length }})</span>
+              <i class="bi bi-chevron-down"></i>
+            </div>
+            <div class="collapse show" id="historyCollapse">
+              <div class="collapsible-content">
+                {% for item in history|reverse %}
+                  {% if loop.index <= 3 %}
+                    <div class="history-item">
+                      <div class="history-info">
+                        <div><strong>{{ item.original_name }}</strong></div>
+                        <div>{{ item.parts }} parts 
+                          {% if item.fade_applied %}
+                          <span class="badge bg-info">Fade</span>
+                          {% endif %}
+                        </div>
+                        <div class="history-timestamp">{{ item.timestamp|int|timestamp_format }}</div>
+                      </div>
+                      <div class="history-actions">
+                        <a href="{{ url_for('done', folder=item.folder) }}" class="btn btn-sm btn-outline-primary action-btn">
+                          <i class="bi bi-folder2-open"></i>
+                        </a>
+                        <a href="{{ url_for('download', folder=item.folder, filename=item.folder + '.zip') }}" 
+                          class="btn btn-sm btn-outline-success action-btn">
+                          <i class="bi bi-download"></i>
+                        </a>
+                      </div>
+                    </div>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+          
+          <!-- Desktop history list -->
+          <div class="desktop-only">
+            {% for item in history|reverse %}
+              {% if loop.index <= 5 %}
+                <div class="history-item">
+                  <div class="history-info">
+                    <div><strong>{{ item.original_name }}</strong></div>
+                    <div>{{ item.parts }} parts 
+                      {% if item.fade_applied %}
+                      <span class="badge bg-info">Fade</span>
+                      {% endif %}
+                    </div>
+                    <div class="history-timestamp">{{ item.timestamp|int|timestamp_format }}</div>
+                  </div>
+                  <div class="history-actions">
+                    <a href="{{ url_for('done', folder=item.folder) }}" class="btn btn-sm btn-outline-primary action-btn">
+                      <i class="bi bi-folder2-open"></i>
+                    </a>
+                    <a href="{{ url_for('download', folder=item.folder, filename=item.folder + '.zip') }}" 
+                      class="btn btn-sm btn-outline-success action-btn">
+                      <i class="bi bi-download"></i>
+                    </a>
+                  </div>
+                </div>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+    </div>
   </div>
+
+  <!-- Bootstrap JS Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Define elements for both mobile and desktop
+      const mobileMode = window.innerWidth < 768;
+      
+      // Common elements
+      const form = document.getElementById('uploadForm');
+      
+      // Desktop elements
+      const dropZone = document.getElementById('dropZone');
+      const fileInput = document.getElementById('fileInput');
+      const fileList = document.getElementById('fileList');
+      const duration = document.getElementById('duration');
+      const numChunks = document.getElementById('numChunks');
+      const splitModeSelector = document.getElementById('splitModeSelector');
+      const durationTab = document.getElementById('durationTab');
+      const chunksTab = document.getElementById('chunksTab');
+      
+      // Mobile elements
+      const fileInputMobile = document.getElementById('file-input');
+      const fileListMobile = document.getElementById('fileListMobile');
+      const durationMobile = document.getElementById('durationMobile');
+      const numChunksMobile = document.getElementById('numChunksMobile');
+      const splitModeSelectorMobile = document.getElementById('splitModeSelectorMobile');
+      const durationTabMobile = document.getElementById('durationTabMobile');
+      const chunksTabMobile = document.getElementById('chunksTabMobile');
+      
+      // Initialize form mode
+      let currentMode = 'duration';
+      
+      // Tab switching for desktop
+      if (splitModeSelector) {
+        splitModeSelector.addEventListener('click', function(e) {
+          handleTabClick(e, splitModeSelector, durationTab, chunksTab, duration, numChunks);
+        });
+      }
+      
+      // Tab switching for mobile
+      if (splitModeSelectorMobile) {
+        splitModeSelectorMobile.addEventListener('click', function(e) {
+          handleTabClick(e, splitModeSelectorMobile, durationTabMobile, chunksTabMobile, durationMobile, numChunksMobile);
+        });
+      }
+      
+      function handleTabClick(e, selector, durTab, chunkTab, durInput, chunkInput) {
+        if (e.target.classList.contains('tab-btn') || e.target.parentElement.classList.contains('tab-btn')) {
+          const btn = e.target.classList.contains('tab-btn') ? e.target : e.target.parentElement;
+          const mode = btn.dataset.mode;
+          
+          // Update active button
+          selector.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          
+          // Show/hide tabs
+          if (mode === 'duration') {
+            durTab.classList.remove('d-none');
+            chunkTab.classList.add('d-none');
+            currentMode = 'duration';
+            // Clear the other field
+            chunkInput.value = '';
+            
+            // Update the other view if it exists
+            if (chunkInput !== numChunks && numChunks) numChunks.value = '';
+            if (chunkInput !== numChunksMobile && numChunksMobile) numChunksMobile.value = '';
+            
+            // Show/hide on the other view if it exists
+            if (durTab !== durationTab && durationTab) durationTab.classList.remove('d-none');
+            if (chunkTab !== chunksTab && chunksTab) chunksTab.classList.add('d-none');
+            if (durTab !== durationTabMobile && durationTabMobile) durationTabMobile.classList.remove('d-none');
+            if (chunkTab !== chunksTabMobile && chunksTabMobile) chunksTabMobile.classList.add('d-none');
+            
+          } else {
+            durTab.classList.add('d-none');
+            chunkTab.classList.remove('d-none');
+            currentMode = 'chunks';
+            // Clear the other field
+            durInput.value = '';
+            
+            // Update the other view if it exists
+            if (durInput !== duration && duration) duration.value = '';
+            if (durInput !== durationMobile && durationMobile) durationMobile.value = '';
+            
+            // Show/hide on the other view if it exists
+            if (durTab !== durationTab && durationTab) durationTab.classList.add('d-none');
+            if (chunkTab !== chunksTab && chunksTab) chunksTab.classList.remove('d-none');
+            if (durTab !== durationTabMobile && durationTabMobile) durationTabMobile.classList.add('d-none');
+            if (chunkTab !== chunksTabMobile && chunksTabMobile) chunksTabMobile.classList.remove('d-none');
+          }
+          
+          // Also update the other tab selector
+          if (selector === splitModeSelector && splitModeSelectorMobile) {
+            splitModeSelectorMobile.querySelectorAll('.tab-btn').forEach(b => {
+              if (b.dataset.mode === mode) b.classList.add('active');
+              else b.classList.remove('active');
+            });
+          } else if (selector === splitModeSelectorMobile && splitModeSelector) {
+            splitModeSelector.querySelectorAll('.tab-btn').forEach(b => {
+              if (b.dataset.mode === mode) b.classList.add('active');
+              else b.classList.remove('active');
+            });
+          }
+        }
+      }
+      
+      // Sync values between mobile and desktop inputs
+      if (duration && durationMobile) {
+        duration.addEventListener('input', () => durationMobile.value = duration.value);
+        durationMobile.addEventListener('input', () => duration.value = durationMobile.value);
+      }
+      
+      if (numChunks && numChunksMobile) {
+        numChunks.addEventListener('input', () => numChunksMobile.value = numChunks.value);
+        numChunksMobile.addEventListener('input', () => numChunks.value = numChunksMobile.value);
+      }
+      
+      // Sync fade checkboxes
+      const fade = document.getElementById('fade');
+      const fadeMobile = document.getElementById('fadeMobile');
+      
+      if (fade && fadeMobile) {
+        fade.addEventListener('change', () => fadeMobile.checked = fade.checked);
+        fadeMobile.addEventListener('change', () => fade.checked = fadeMobile.checked);
+      }
+      
+      // Desktop file handling
+      if (dropZone && fileInput) {
+        // Open file browser when clicking on drop zone
+        dropZone.addEventListener('click', () => fileInput.click());
+        
+        // Handle drag & drop events
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+          dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+          dropZone.addEventListener(eventName, () => {
+            dropZone.classList.add('active');
+          });
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+          dropZone.addEventListener(eventName, () => {
+            dropZone.classList.remove('active');
+          });
+        });
+        
+        // Handle file drop
+        dropZone.addEventListener('drop', (e) => {
+          const files = e.dataTransfer.files;
+          handleFiles(files, fileList);
+          
+          // Sync with mobile view
+          if (fileListMobile) {
+            handleFiles(files, fileListMobile);
+          }
+        });
+        
+        // Handle file selection
+        fileInput.addEventListener('change', () => {
+          handleFiles(fileInput.files, fileList);
+          
+          // Sync with mobile view
+          if (fileListMobile && fileInputMobile) {
+            // Clone selected files to mobile input
+            if (fileInputMobile.files.length === 0) {
+              handleFiles(fileInput.files, fileListMobile);
+            }
+          }
+        });
+      }
+      
+      // Mobile file handling
+      if (fileInputMobile) {
+        fileInputMobile.addEventListener('change', () => {
+          handleFiles(fileInputMobile.files, fileListMobile);
+          
+          // Sync with desktop view
+          if (fileList && fileInput) {
+            // Clone selected files to desktop input
+            if (fileInput.files.length === 0) {
+              handleFiles(fileInputMobile.files, fileList);
+            }
+          }
+        });
+      }
+      
+      // Handle form submission
+      form.addEventListener('submit', function(e) {
+        if (!validateForm()) {
+          e.preventDefault();
+        }
+      });
+      
+      function validateForm() {
+        let hasFiles = false;
+        
+        // Check if either desktop or mobile has files
+        if (fileList && fileList.children.length > 0) {
+          hasFiles = true;
+        } else if (fileListMobile && fileListMobile.children.length > 0) {
+          hasFiles = true;
+        }
+        
+        if (!hasFiles) {
+          alert('Please select at least one file to upload');
+          return false;
+        }
+        
+        if (currentMode === 'duration') {
+          const durValue = duration ? duration.value : (durationMobile ? durationMobile.value : '');
+          if (durValue === '' || parseFloat(durValue) <= 0) {
+            alert('Please specify the minutes per chunk');
+            return false;
+          }
+        }
+        
+        if (currentMode === 'chunks') {
+          const chunksValue = numChunks ? numChunks.value : (numChunksMobile ? numChunksMobile.value : '');
+          if (chunksValue === '' || parseInt(chunksValue) <= 0) {
+            alert('Please specify the number of chunks');
+            return false;
+          }
+        }
+        
+        return true;
+      }
+      
+      function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      
+      function handleFiles(files, targetList) {
+        if (!files || !targetList || files.length === 0) return;
+        
+        // Clear previous file selection for single uploads
+        if (files.length === 1) {
+          targetList.innerHTML = '';
+        }
+        
+        Array.from(files).forEach(file => {
+          const fileItem = document.createElement('div');
+          fileItem.className = 'file-item';
+          
+          const icon = document.createElement('i');
+          icon.className = 'bi bi-file-earmark-music';
+          
+          const fileName = document.createElement('div');
+          fileName.className = 'file-name';
+          fileName.textContent = file.name;
+          
+          const removeBtn = document.createElement('button');
+          removeBtn.className = 'btn btn-sm btn-outline-danger ms-2';
+          removeBtn.innerHTML = '<i class="bi bi-x"></i>';
+          removeBtn.setAttribute('type', 'button');
+          removeBtn.onclick = function(e) {
+            e.preventDefault();
+            fileItem.remove();
+            
+            // Also remove from the other list if it exists
+            if (targetList === fileList && fileListMobile) {
+              const otherItem = findFileItemByName(fileListMobile, file.name);
+              if (otherItem) otherItem.remove();
+            } else if (targetList === fileListMobile && fileList) {
+              const otherItem = findFileItemByName(fileList, file.name);
+              if (otherItem) otherItem.remove();
+            }
+          };
+          
+          fileItem.appendChild(icon);
+          fileItem.appendChild(fileName);
+          fileItem.appendChild(removeBtn);
+          targetList.appendChild(fileItem);
+        });
+      }
+      
+      function findFileItemByName(list, name) {
+        for (let i = 0; i < list.children.length; i++) {
+          const nameElement = list.children[i].querySelector('.file-name');
+          if (nameElement && nameElement.textContent === name) {
+            return list.children[i];
+          }
+        }
+        return null;
+      }
+      
+      // Make collapsible sections work
+      document.querySelectorAll('.collapsible-header').forEach(header => {
+        header.addEventListener('click', function() {
+          const target = this.getAttribute('data-bs-target');
+          const content = document.querySelector(target);
+          const icon = this.querySelector('.bi-chevron-down');
+          
+          if (content.classList.contains('show')) {
+            icon.style.transform = 'rotate(0deg)';
+          } else {
+            icon.style.transform = 'rotate(180deg)';
+          }
+        });
+      });
+      
+      // Double-tap prevention for iOS
+      document.addEventListener('touchend', function(event) {
+        const now = Date.now();
+        const lastTouch = parseInt(this.getAttribute('data-last-touch') || '0');
+        
+        if (now - lastTouch < 300) {
+          event.preventDefault();
+        }
+        
+        this.setAttribute('data-last-touch', now.toString());
+      }, false);
+
+      // Validate file input to ensure only audio/video files are selected
+      document.getElementById('file-input').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+          const fileType = file.type;
+          if (!fileType.startsWith('audio/') && !fileType.startsWith('video/')) {
+            alert('Please select an audio or video file.');
+            e.target.value = '';
+          }
+        }
+      });
+
+      // JavaScript to handle form submission
+      document.getElementById('splitterForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Get selected tab
+        const activeTab = document.querySelector('#splitOptionsTab button.active, #splitOptionsTabMobile button.active');
+        const tabId = activeTab ? activeTab.getAttribute('data-bs-target') : null;
+        
+        // Set up the FormData object
+        const formData = new FormData(this);
+        
+        // Get values based on currently active settings
+        if (tabId === '#segmentsTab' || tabId === '#segmentsTabMobile') {
+          formData.set('split_by', 'segments');
+          const segmentsInput = window.innerWidth <= 768 ? 
+            document.getElementById('segmentsMobile') : 
+            document.getElementById('segments');
+          formData.set('segments', segmentsInput.value);
+        } else {
+          formData.set('split_by', 'duration');
+          // Check whether to use minutes or seconds
+          const durationInput = window.innerWidth <= 768 ? 
+            document.getElementById('durationMobile') : 
+            document.getElementById('duration');
+          const durationSecondsInput = window.innerWidth <= 768 ? 
+            document.getElementById('durationSecondsMobile') : 
+            document.getElementById('durationSeconds');
+            
+          // If seconds are specified, convert to minutes for backend
+          if (durationSecondsInput.value && parseInt(durationSecondsInput.value) > 0) {
+            // Convert seconds to minutes (divided by 60)
+            const durationInMinutes = parseFloat(durationSecondsInput.value) / 60;
+            formData.set('duration', durationInMinutes.toFixed(4));
+          } else {
+            formData.set('duration', durationInput.value);
+          }
+        }
+        
+        // Show progress bar
+        // ... existing code ...
+      });
+    });
+  </script>
 </body>
 </html>

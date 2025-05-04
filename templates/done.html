@@ -3,38 +3,429 @@
 <head>
   <meta charset="utf-8">
   <title>Split Complete</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, shrink-to-fit=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#f8f9fa">
   <link 
     href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" 
     rel="stylesheet">
-  <style>body{padding:2rem}</style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <style>
+    :root {
+      --primary-color: #0d6efd;
+      --success-color: #198754;
+      --light-bg: #f8f9fa;
+      --border-color: #dee2e6;
+      --accent-border: 3px solid var(--primary-color);
+      --touch-size: 44px;
+    }
+    
+    html, body {
+      height: 100%;
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    body {
+      padding: 0;
+      background-color: var(--light-bg);
+      color: #212529;
+      touch-action: manipulation;
+    }
+    
+    .page-container {
+      padding: 1rem 0;
+    }
+    
+    .container {
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    
+    @media (max-width: 768px) {
+      .container {
+        padding: 1.25rem;
+        border-radius: 8px;
+      }
+    }
+    
+    .app-header {
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .ios-momentum-scroll {
+      -webkit-overflow-scrolling: touch;
+      overflow-y: scroll;
+    }
+    
+    .chunk-list {
+      max-height: 300px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1rem;
+      background-color: var(--light-bg);
+      margin-bottom: 1.5rem;
+    }
+    
+    .chunk-item {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem;
+      margin-bottom: 0.5rem;
+      border-radius: 6px;
+      background-color: white;
+      border-left: var(--accent-border);
+      transition: all 0.2s;
+    }
+    
+    .chunk-item:active {
+      background-color: rgba(13, 110, 253, 0.05);
+    }
+    
+    .chunk-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+    }
+    
+    .chunk-item:last-child {
+      margin-bottom: 0;
+    }
+    
+    .chunk-name {
+      flex-grow: 1;
+      margin-left: 0.5rem;
+    }
+    
+    .history-section {
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border-color);
+    }
+    
+    .history-items {
+      display: flex;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      gap: 1rem;
+      padding: 0.5rem 0;
+      margin-bottom: 1rem;
+    }
+    
+    .history-card {
+      flex: 0 0 auto;
+      width: 200px;
+      padding: 0.75rem;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background-color: #fff;
+      transition: all 0.2s;
+    }
+    
+    @media (max-width: 576px) {
+      .history-card {
+        width: 160px;
+      }
+    }
+    
+    .history-card:active {
+      background-color: rgba(13, 110, 253, 0.05);
+    }
+    
+    .history-card:hover {
+      border-color: var(--primary-color);
+      background-color: rgba(13, 110, 253, 0.05);
+      transform: translateY(-2px);
+      box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+    }
+    
+    .history-title {
+      font-weight: bold;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .history-timestamp {
+      font-size: 0.75rem;
+      color: #6c757d;
+    }
+    
+    .split-info {
+      display: block;
+      width: 100%;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      background-color: var(--light-bg);
+      border-left: var(--accent-border);
+    }
+    
+    .action-btn {
+      min-height: var(--touch-size);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      transition: all 0.2s;
+      font-size: 1rem;
+      font-weight: 500;
+    }
+    
+    .action-btn:hover, .action-btn:active {
+      transform: translateY(-2px);
+      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    }
+    
+    .section-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    
+    .card-action {
+      margin-top: 0.5rem;
+      display: flex;
+      gap: 0.5rem;
+    }
+    
+    .info-card {
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      background-color: var(--light-bg);
+      border-left: 3px solid #6c757d;
+    }
+    
+    /* For iOS-specific styles */
+    @supports (-webkit-touch-callout: none) {
+      /* CSS specific to iOS devices */
+      input, button, a {
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+      }
+    }
+    
+    /* Collapsible section for mobile */
+    .collapsible-section {
+      margin-bottom: 1rem;
+    }
+    
+    .collapsible-header {
+      background-color: var(--light-bg);
+      padding: 1rem;
+      border-radius: 8px;
+      font-weight: 500;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+    
+    .collapsible-content {
+      padding: 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 0 0 8px 8px;
+      margin-top: -5px;
+      background-color: white;
+    }
+    
+    /* Action buttons row */
+    .action-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    @media (max-width: 576px) {
+      .action-buttons {
+        flex-direction: column;
+      }
+      
+      .action-buttons .btn {
+        width: 100%;
+      }
+    }
+  </style>
 </head>
 <body>
-  <div class="container" style="max-width:600px">
-    <h2>✅ Split Complete</h2>
-    <p>Folder: <code>{{ folder }}</code></p>
-    <p>Created <strong>{{ parts|length }}</strong> chunks.</p>
-    <p>
-      <a href="{{ url_for('download', folder=folder, filename=zip_name) }}" 
-         class="btn btn-success">
-        Download All as ZIP
-      </a>
-    </p>
-    <h5>Individual files:</h5>
-    <ul>
-      {% for f in parts %}
-        <li>
-          <a href="{{ url_for('download', folder=folder, filename=f) }}">{{ f }}</a>
-        </li>
-      {% endfor %}
-    </ul>
-    <hr>
-    <p>On your Mac, you can open this folder directly:</p>
-    <p>
-      <a href="file://{{ abs_path }}" target="_blank" class="btn btn-outline-secondary">
-        Open in Finder
-      </a>
-    </p>
+  <div class="page-container">
+    <div class="container" style="max-width:650px">
+      <div class="app-header">
+        <h2><i class="bi bi-check-circle-fill text-success"></i> Split Complete</h2>
+        <p class="text-muted">Your audio/video has been successfully split into chunks</p>
+      </div>
+      
+      <div class="split-info">
+        <div class="mb-2">
+          <i class="bi bi-file-earmark-music"></i> 
+          <strong>Original file:</strong> 
+          {% if file_details %}{{ file_details.original_name }}{% else %}{{ folder }}{% endif %}
+        </div>
+
+        <div class="mb-2">
+          <i class="bi bi-collection"></i> 
+          <strong>Parts:</strong> {{ parts|length }} chunks
+        </div>
+
+        {% if file_details %}
+          <div class="mb-2">
+            <i class="bi bi-sliders"></i> 
+            <strong>Split by:</strong> 
+            {% if file_details.split_mode == 'duration' %}
+              {{ file_details.duration_min }} minutes per chunk
+            {% else %}
+              {{ file_details.num_chunks }} equal parts
+            {% endif %}
+          </div>
+
+          {% if file_details.fade_applied %}
+            <div>
+              <i class="bi bi-music-note"></i> 
+              <strong>Fade:</strong> Applied (2 sec)
+            </div>
+          {% endif %}
+        {% endif %}
+      </div>
+
+      <div class="action-buttons">
+        <a href="{{ url_for('download', folder=folder, filename=zip_name) }}" 
+           class="btn btn-success action-btn">
+          <i class="bi bi-file-earmark-zip"></i> Download All as ZIP
+        </a>
+        <a href="{{ url_for('index') }}" class="btn btn-outline-primary action-btn">
+          <i class="bi bi-arrow-left"></i> Process Another File
+        </a>
+        <a href="{{ url_for('history') }}" class="btn btn-outline-secondary action-btn">
+          <i class="bi bi-clock-history"></i> View History
+        </a>
+      </div>
+      
+      <!-- Mobile collapsible chunks -->
+      <div class="collapsible-section d-md-none">
+        <div class="collapsible-header" data-bs-toggle="collapse" data-bs-target="#chunksCollapse">
+          <span><i class="bi bi-list-ul"></i> Individual Chunks ({{ parts|length }})</span>
+          <i class="bi bi-chevron-down"></i>
+        </div>
+        <div class="collapse show" id="chunksCollapse">
+          <div class="collapsible-content p-0">
+            <div class="chunk-list ios-momentum-scroll" style="margin-bottom: 0; border-radius: 0 0 8px 8px;">
+              {% for f in parts %}
+                <div class="chunk-item">
+                  <i class="bi bi-file-earmark-music"></i>
+                  <div class="chunk-name">{{ f }}</div>
+                  <a href="{{ url_for('download', folder=folder, filename=f) }}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-download"></i>
+                  </a>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Desktop chunks list -->
+      <div class="d-none d-md-block">
+        <h5 class="mb-3"><i class="bi bi-list-ul"></i> Individual Chunks:</h5>
+        <div class="chunk-list">
+          {% for f in parts %}
+            <div class="chunk-item">
+              <i class="bi bi-file-earmark-music"></i>
+              <div class="chunk-name">{{ f }}</div>
+              <a href="{{ url_for('download', folder=folder, filename=f) }}" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-download"></i>
+              </a>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+      
+      <div class="info-card">
+        <p class="mb-1"><i class="bi bi-info-circle"></i> <strong>Local Access:</strong></p>
+        <p class="mb-2 small text-muted">On your Mac, you can open this folder directly:</p>
+        <a href="file://{{ abs_path }}" target="_blank" class="btn btn-outline-secondary action-btn">
+          <i class="bi bi-folder2-open"></i> Open in Finder
+        </a>
+      </div>
+      
+      {% if history and history|length > 1 %}
+        <div class="history-section">
+          <div class="section-heading">
+            <h5><i class="bi bi-clock-history"></i> Recent Splits</h5>
+            <a href="{{ url_for('view_history') }}" class="btn btn-sm btn-outline-secondary">
+              View All
+            </a>
+          </div>
+          
+          <div class="history-items ios-momentum-scroll">
+            {% for item in history|reverse %}
+              {% if item.folder != folder and loop.index <= 6 %}
+                <div class="history-card">
+                  <div class="history-title">{{ item.original_name }}</div>
+                  <div>{{ item.parts }} parts</div>
+                  {% if item.fade_applied %}
+                    <span class="badge bg-info">Fade</span>
+                  {% endif %}
+                  <div class="history-timestamp mt-1">{{ item.timestamp|int|timestamp_format }}</div>
+                  <div class="card-action">
+                    <a href="{{ url_for('done', folder=item.folder) }}" class="btn btn-sm btn-outline-primary">
+                      <i class="bi bi-folder-fill"></i>
+                    </a>
+                    <a href="{{ url_for('download', folder=item.folder, filename=item.folder + '.zip') }}" 
+                      class="btn btn-sm btn-outline-success">
+                      <i class="bi bi-download"></i>
+                    </a>
+                  </div>
+                </div>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+    </div>
   </div>
+  
+  <!-- Bootstrap JS Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Make collapsible sections work
+      document.querySelectorAll('.collapsible-header').forEach(header => {
+        header.addEventListener('click', function() {
+          const target = this.getAttribute('data-bs-target');
+          const content = document.querySelector(target);
+          const icon = this.querySelector('.bi-chevron-down');
+          
+          if (content.classList.contains('show')) {
+            icon.style.transform = 'rotate(0deg)';
+          } else {
+            icon.style.transform = 'rotate(180deg)';
+          }
+        });
+      });
+      
+      // Double-tap prevention for iOS
+      document.addEventListener('touchend', function(event) {
+        const now = Date.now();
+        const lastTouch = parseInt(this.getAttribute('data-last-touch') || '0');
+        
+        if (now - lastTouch < 300) {
+          event.preventDefault();
+        }
+        
+        this.setAttribute('data-last-touch', now.toString());
+      }, false);
+    });
+  </script>
 </body>
 </html>

@@ -1,0 +1,16 @@
+{
+  "name": "Audio and Video Splitter",
+  "short_name": "AV Splitter",
+  "description": "A tool to split audio and video files into smaller chunks",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8f9fa",
+  "theme_color": "#f8f9fa",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+} 
